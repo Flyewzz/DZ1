@@ -20,6 +20,7 @@ char** remove_spaces(char * const *const mas, const unsigned int size) {
         register bool space = true;
         array[i] = malloc(30);
         top = 0;
+        // Работает!
         for (int j = 0; j < strlen(mas[i]); ++j) {
             if (mas[i][j] != ' ') {
                 space = false;
