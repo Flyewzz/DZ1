@@ -17,7 +17,7 @@ char** remove_spaces(char * const *const mas, const unsigned int size) {
     posix_memalign((void*)array, 8, size * sizeof(char*));
     register unsigned int top;
     for (int i = 0; i < size; ++i) {
-        register bool space = true;
+        register bool space = true; //com
         array[i] = malloc(30);
         top = 0;
         for (int j = 0; j < strlen(mas[i]); ++j) {
