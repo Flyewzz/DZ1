@@ -22,9 +22,16 @@ char** remove_spaces(char * const *const mas, const unsigned int size) {
     register unsigned int top;
     for (int i = 0; i < size; ++i) {
         register bool space = true;
-        array[i] = malloc(strlen(mas[i]));
+        if (strlen(mas[i]) == 0) {
+          for (int j = 0; j < i; ++j) free(array[j]);
+            free(array);
+            return NULL;
+        }
+        unsigned long len = strlen(mas[i]);
+        array[i] = malloc(len);
+        for (int j = 0; j < len; ++j) array[i][j] = '\0';
         top = 0;
-        for (int j = 0; j < strlen(mas[i]); ++j) {
+        for (int j = 0; j < len; ++j) {
             if (mas[i][j] == ' ') {
                 if (space == true) continue;
                 space = true;
@@ -37,7 +44,7 @@ char** remove_spaces(char * const *const mas, const unsigned int size) {
 }
 
 size_t MASSIZE = 1;
-size_t BUFSIZE = 1;
+size_t BUFSIZE = 2;
 
 int main(int argc, const char * argv[]) {
     
@@ -45,15 +52,14 @@ int main(int argc, const char * argv[]) {
     register unsigned int cnt = 0;
     char ** mas = malloc(MASSIZE * sizeof(char*));
    // posix_memalign((void*)mas, 64, MASSIZE * sizeof(char*));
-    char *buffer;
+    char *buffer = (char*)malloc(BUFSIZE*sizeof(char));
+    buffer[0]='\0';
     char c;
     int symbol_count = 0; //Счетчик символов в строке
  //   while (strncmp(buffer, "\n", strlen(buffer))) {
-    bool any = false;
     while ((c = getchar()) != EOF) {
-        any = true;
         if (c == '\n') {
-            if (symbol_count == 0) error_status = true;
+            if (symbol_count == 0) {error_status = true; break;}
             if (top >= MASSIZE)
                 mas = (char**)realloc(mas, ++MASSIZE * sizeof(char*));
             mas[top++] = buffer;
@@ -63,12 +69,12 @@ int main(int argc, const char * argv[]) {
             symbol_count = 0;
             continue;
         }
-        if (symbol_count+1 >= BUFSIZE)
+        if (symbol_count >= BUFSIZE)
             buffer = (char*)realloc(buffer, ++BUFSIZE * sizeof(char));
         buffer[symbol_count++] = c;
         buffer[symbol_count] = '\0';
     }
-    if (any == true) free(buffer);
+    free(buffer);
 char **result = remove_spaces(mas, cnt);
     if (error_status == false)
         for (int i = 0; i < cnt; ++i) {
