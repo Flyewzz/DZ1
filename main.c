@@ -14,14 +14,15 @@
 #include <errno.h>
 
 typedef enum {false, true} bool;
+bool error_status = false;
 char** remove_spaces(char * const *const mas, const unsigned int size) {
-    if (size == 0) return NULL;
+    if (size == 0 || error_status == true) return NULL;
     char **array = malloc(size * sizeof(char*));
    // posix_memalign((void*)array, 64, size * sizeof(char*));
     register unsigned int top;
     for (int i = 0; i < size; ++i) {
         register bool space = true;
-        array[i] = malloc(30);
+        array[i] = malloc(strlen(mas[i]));
         top = 0;
         for (int j = 0; j < strlen(mas[i]); ++j) {
             if (mas[i][j] == ' ') {
@@ -36,7 +37,7 @@ char** remove_spaces(char * const *const mas, const unsigned int size) {
 }
 
 size_t MASSIZE = 1;
-size_t BUFSIZE = 2;
+size_t BUFSIZE = 1;
 
 int main(int argc, const char * argv[]) {
     
@@ -45,22 +46,35 @@ int main(int argc, const char * argv[]) {
     char ** mas = malloc(MASSIZE * sizeof(char*));
    // posix_memalign((void*)mas, 64, MASSIZE * sizeof(char*));
     char *buffer;
+    char c;
+    int symbol_count = 0; //Счетчик символов в строке
  //   while (strncmp(buffer, "\n", strlen(buffer))) {
-    while (1) {
-        buffer = malloc(BUFSIZE * sizeof(char));
-        getline(&buffer, &BUFSIZE, stdin);
-        if (!strcmp(buffer, "\n")) { free(buffer); break;}
-        if (top >= MASSIZE)
-            mas = (char**)realloc(mas, ++MASSIZE*sizeof(char*));
-        mas[top++] = buffer;
-        ++cnt;
+    bool any = false;
+    while ((c = getchar()) != EOF) {
+        any = true;
+        if (c == '\n') {
+            if (symbol_count == 0) error_status = true;
+            if (top >= MASSIZE)
+                mas = (char**)realloc(mas, ++MASSIZE * sizeof(char*));
+            mas[top++] = buffer;
+            buffer = (char*)malloc(BUFSIZE*sizeof(char));
+            buffer[0] = '\0';
+            ++cnt;
+            symbol_count = 0;
+            continue;
+        }
+        if (symbol_count+1 >= BUFSIZE)
+            buffer = (char*)realloc(buffer, ++BUFSIZE * sizeof(char));
+        buffer[symbol_count++] = c;
+        buffer[symbol_count] = '\0';
     }
-
+    if (any == true) free(buffer);
 char **result = remove_spaces(mas, cnt);
-    for (int i = 0; i < cnt; ++i) {
-     printf("%s\n", result[i]);
-        free(result[i]);
-    }
+    if (error_status == false)
+        for (int i = 0; i < cnt; ++i) {
+            printf("%s\n", result[i]);
+            free(result[i]);
+        }
     for (int i = 0; i < cnt; ++i) free(mas[i]);
     free(mas);
     if (result == NULL) printf("[error]\n");
