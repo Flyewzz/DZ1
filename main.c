@@ -28,8 +28,8 @@ char** remove_spaces(char * const *const mas, const unsigned int size) {
             return NULL;
         }
         unsigned long len = strlen(mas[i]);
-        array[i] = malloc(len);
-        for (int j = 0; j < len; ++j) array[i][j] = '\0';
+        array[i] = malloc((len+1)*sizeof(char));
+        for (int j = 0; j < len+1; ++j) array[i][j] = '\0';
         top = 0;
         for (int j = 0; j < len; ++j) {
             if (mas[i][j] == ' ') {
@@ -70,9 +70,16 @@ int main(int argc, const char * argv[]) {
             continue;
         }
         if (symbol_count >= BUFSIZE)
-            buffer = (char*)realloc(buffer, ++BUFSIZE * sizeof(char));
+            buffer = (char*)realloc(buffer, (BUFSIZE+=2) * sizeof(char));
         buffer[symbol_count++] = c;
         buffer[symbol_count] = '\0';
+    }
+    if (symbol_count != 0) {
+        if (top >= MASSIZE)
+            mas = (char**)realloc(mas, ++MASSIZE * sizeof(char*));
+        mas[top] = buffer;
+        buffer = (char*)malloc(BUFSIZE*sizeof(char));
+        ++cnt;
     }
     free(buffer);
 char **result = remove_spaces(mas, cnt);
