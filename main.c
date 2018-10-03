@@ -16,12 +16,11 @@
 typedef enum {false, true} bool;
 bool error_status = false;
 char** remove_spaces(char * const *const mas, const unsigned int size) {
-    if (size == 0 || error_status == true) return NULL;
+    if (error_status == true) return NULL;
     char **array = malloc(size * sizeof(char*));
    // posix_memalign((void*)array, 64, size * sizeof(char*));
     register unsigned int top;
     for (int i = 0; i < size; ++i) {
-        register bool space = true;
         if (strlen(mas[i]) == 0) {
           for (int j = 0; j < i; ++j) free(array[j]);
             free(array);
@@ -29,6 +28,7 @@ char** remove_spaces(char * const *const mas, const unsigned int size) {
         }
         unsigned long len = strlen(mas[i]);
         array[i] = malloc((len+1)*sizeof(char));
+        register bool space = false;
         for (int j = 0; j < len+1; ++j) array[i][j] = '\0';
         top = 0;
         for (int j = 0; j < len; ++j) {
@@ -59,7 +59,13 @@ int main(int argc, const char * argv[]) {
  //   while (strncmp(buffer, "\n", strlen(buffer))) {
     while ((c = getchar()) != EOF) {
         if (c == '\n') {
-            if (symbol_count == 0) {error_status = true; break;}
+            if (symbol_count == 0) {
+                if (symbol_count+1 >= BUFSIZE)
+                    buffer = (char*)realloc(buffer, (BUFSIZE+=2) * sizeof(char));
+                buffer[symbol_count++] = c;
+                buffer[symbol_count] = '\0';
+                continue;
+            }
             if (top >= MASSIZE)
                 mas = (char**)realloc(mas, ++MASSIZE * sizeof(char*));
             mas[top++] = buffer;
@@ -69,7 +75,7 @@ int main(int argc, const char * argv[]) {
             symbol_count = 0;
             continue;
         }
-        if (symbol_count >= BUFSIZE)
+        if (symbol_count+1 >= BUFSIZE)
             buffer = (char*)realloc(buffer, (BUFSIZE+=2) * sizeof(char));
         buffer[symbol_count++] = c;
         buffer[symbol_count] = '\0';
@@ -90,8 +96,6 @@ char **result = remove_spaces(mas, cnt);
         }
     for (int i = 0; i < cnt; ++i) free(mas[i]);
     free(mas);
-    if (result == NULL) printf("[error]\n");
-    else
-        free(result);
+    if (result != NULL) free(result);
     return 0;
 }
